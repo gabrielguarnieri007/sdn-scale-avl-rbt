@@ -1,0 +1,11 @@
+
+### `.gitignore`
+
+```gitignore
+*.class
+out/
+bin/
+target/
+.vscode/
+.DS_Store
+results/
