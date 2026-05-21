@@ -20,4 +20,3 @@ O objetivo é comparar duas estruturas de árvores balanceadas, AVL e Red-Black,
 
 ```text
 src/    Código-fonte Java
-docs/   Documentação do projeto
