@@ -31,6 +31,58 @@ public class AVLRouterTree {
         return rotationCount;
     }
 
+    public boolean insert(PacketRule rule) {
+        if (rule == null) {
+            throw new IllegalArgumentException("A regra não pode ser nula.");
+        }
+
+        boolean isNewRule = search(rule.getId()) == null;
+        root = insert(root, rule);
+
+        if (isNewRule) {
+            size++;
+        }
+
+        return isNewRule;
+    }
+
+    public PacketRule search(int id) {
+        Node current = root;
+
+        while (current != null) {
+            if (id < current.rule.getId()) {
+                current = current.left;
+            } else if (id > current.rule.getId()) {
+                current = current.right;
+            } else {
+                return current.rule;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean contains(int id) {
+        return search(id) != null;
+    }
+
+    private Node insert(Node node, PacketRule rule) {
+        if (node == null) {
+            return new Node(rule);
+        }
+
+        if (rule.getId() < node.rule.getId()) {
+            node.left = insert(node.left, rule);
+        } else if (rule.getId() > node.rule.getId()) {
+            node.right = insert(node.right, rule);
+        } else {
+            node.rule = rule;
+            return node;
+        }
+
+        return rebalance(node);
+    }
+
     private int height(Node node) {
         if (node == null) {
             return 0;
