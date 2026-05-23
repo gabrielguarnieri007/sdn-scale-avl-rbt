@@ -66,6 +66,16 @@ public class AVLRouterTree {
         return search(id) != null;
     }
 
+    public boolean delete(int id) {
+        if (!contains(id)) {
+            return false;
+        }
+
+        root = delete(root, id);
+        size--;
+        return true;
+    }
+
     private Node insert(Node node, PacketRule rule) {
         if (node == null) {
             return new Node(rule);
@@ -81,6 +91,42 @@ public class AVLRouterTree {
         }
 
         return rebalance(node);
+    }
+
+    private Node delete(Node node, int id) {
+        if (node == null) {
+            return null;
+        }
+
+        if (id < node.rule.getId()) {
+            node.left = delete(node.left, id);
+        } else if (id > node.rule.getId()) {
+            node.right = delete(node.right, id);
+        } else {
+            if (node.left == null) {
+                return node.right;
+            }
+
+            if (node.right == null) {
+                return node.left;
+            }
+
+            Node successor = findMin(node.right);
+            node.rule = successor.rule;
+            node.right = delete(node.right, successor.rule.getId());
+        }
+
+        return rebalance(node);
+    }
+
+    private Node findMin(Node node) {
+        Node current = node;
+
+        while (current.left != null) {
+            current = current.left;
+        }
+
+        return current;
     }
 
     private int height(Node node) {
