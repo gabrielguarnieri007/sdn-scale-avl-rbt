@@ -53,6 +53,110 @@ public class RedBlackRouterTree {
         return root.color.name();
     }
 
+    public boolean insert(PacketRule rule) {
+        if (rule == null) {
+            throw new IllegalArgumentException("A regra não pode ser nula.");
+        }
+
+        Node parent = NIL;
+        Node current = root;
+
+        while (current != NIL) {
+            parent = current;
+
+            if (rule.getId() < current.rule.getId()) {
+                current = current.left;
+            } else if (rule.getId() > current.rule.getId()) {
+                current = current.right;
+            } else {
+                current.rule = rule;
+                return false;
+            }
+        }
+
+        Node newNode = new Node(rule, Color.RED);
+        newNode.left = NIL;
+        newNode.right = NIL;
+        newNode.parent = parent;
+
+        if (parent == NIL) {
+            root = newNode;
+        } else if (rule.getId() < parent.rule.getId()) {
+            parent.left = newNode;
+        } else {
+            parent.right = newNode;
+        }
+
+        size++;
+        fixInsert(newNode);
+
+        return true;
+    }
+
+    public PacketRule search(int id) {
+        Node current = root;
+
+        while (current != NIL) {
+            if (id < current.rule.getId()) {
+                current = current.left;
+            } else if (id > current.rule.getId()) {
+                current = current.right;
+            } else {
+                return current.rule;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean contains(int id) {
+        return search(id) != null;
+    }
+
+    private void fixInsert(Node node) {
+        while (node.parent.color == Color.RED) {
+            if (node.parent == node.parent.parent.left) {
+                Node uncle = node.parent.parent.right;
+
+                if (uncle.color == Color.RED) {
+                    node.parent.color = Color.BLACK;
+                    uncle.color = Color.BLACK;
+                    node.parent.parent.color = Color.RED;
+                    node = node.parent.parent;
+                } else {
+                    if (node == node.parent.right) {
+                        node = node.parent;
+                        rotateLeft(node);
+                    }
+
+                    node.parent.color = Color.BLACK;
+                    node.parent.parent.color = Color.RED;
+                    rotateRight(node.parent.parent);
+                }
+            } else {
+                Node uncle = node.parent.parent.left;
+
+                if (uncle.color == Color.RED) {
+                    node.parent.color = Color.BLACK;
+                    uncle.color = Color.BLACK;
+                    node.parent.parent.color = Color.RED;
+                    node = node.parent.parent;
+                } else {
+                    if (node == node.parent.left) {
+                        node = node.parent;
+                        rotateRight(node);
+                    }
+
+                    node.parent.color = Color.BLACK;
+                    node.parent.parent.color = Color.RED;
+                    rotateLeft(node.parent.parent);
+                }
+            }
+        }
+
+        root.color = Color.BLACK;
+    }
+
     private int height(Node node) {
         if (node == NIL) {
             return 0;
