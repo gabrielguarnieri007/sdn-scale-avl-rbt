@@ -3,24 +3,23 @@ public class Main {
         AVLRouterTree avlTree = new AVLRouterTree();
         RedBlackRouterTree redBlackTree = new RedBlackRouterTree();
 
-        PacketRule rule30 = new PacketRule(30, "192.168.0.30", "10.0.0.30", 100);
-        PacketRule rule20 = new PacketRule(20, "192.168.0.20", "10.0.0.20", 90);
-        PacketRule rule10 = new PacketRule(10, "192.168.0.10", "10.0.0.10", 80);
-        PacketRule rule40 = new PacketRule(40, "192.168.0.40", "10.0.0.40", 70);
-        PacketRule rule50 = new PacketRule(50, "192.168.0.50", "10.0.0.50", 60);
+        PacketRule[] rules = {
+                new PacketRule(30, "192.168.0.30", "10.0.0.30", 100),
+                new PacketRule(20, "192.168.0.20", "10.0.0.20", 90),
+                new PacketRule(10, "192.168.0.10", "10.0.0.10", 80),
+                new PacketRule(40, "192.168.0.40", "10.0.0.40", 70),
+                new PacketRule(50, "192.168.0.50", "10.0.0.50", 60),
+                new PacketRule(25, "192.168.0.25", "10.0.0.25", 85),
+                new PacketRule(35, "192.168.0.35", "10.0.0.35", 75)
+        };
 
-        avlTree.insert(rule30);
-        avlTree.insert(rule20);
-        avlTree.insert(rule10);
-        avlTree.insert(rule40);
-        avlTree.insert(rule50);
+        for (PacketRule rule : rules) {
+            avlTree.insert(rule);
+            redBlackTree.insert(rule);
+        }
+
         avlTree.delete(20);
-
-        redBlackTree.insert(rule30);
-        redBlackTree.insert(rule20);
-        redBlackTree.insert(rule10);
-        redBlackTree.insert(rule40);
-        redBlackTree.insert(rule50);
+        redBlackTree.delete(20);
 
         System.out.println("SDN-Scale: AVL vs Red-Black");
 

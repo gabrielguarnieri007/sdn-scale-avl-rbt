@@ -113,6 +113,69 @@ public class RedBlackRouterTree {
         return search(id) != null;
     }
 
+    public boolean delete(int id) {
+        Node node = findNode(id);
+
+        if (node == NIL) {
+            return false;
+        }
+
+        delete(node);
+        size--;
+        return true;
+    }
+
+    private Node findNode(int id) {
+        Node current = root;
+
+        while (current != NIL) {
+            if (id < current.rule.getId()) {
+                current = current.left;
+            } else if (id > current.rule.getId()) {
+                current = current.right;
+            } else {
+                return current;
+            }
+        }
+
+        return NIL;
+    }
+
+    private void delete(Node node) {
+        Node removedNode = node;
+        Color originalColor = removedNode.color;
+        Node replacement;
+
+        if (node.left == NIL) {
+            replacement = node.right;
+            transplant(node, node.right);
+        } else if (node.right == NIL) {
+            replacement = node.left;
+            transplant(node, node.left);
+        } else {
+            removedNode = findMin(node.right);
+            originalColor = removedNode.color;
+            replacement = removedNode.right;
+
+            if (removedNode.parent == node) {
+                replacement.parent = removedNode;
+            } else {
+                transplant(removedNode, removedNode.right);
+                removedNode.right = node.right;
+                removedNode.right.parent = removedNode;
+            }
+
+            transplant(node, removedNode);
+            removedNode.left = node.left;
+            removedNode.left.parent = removedNode;
+            removedNode.color = node.color;
+        }
+
+        if (originalColor == Color.BLACK) {
+            fixDelete(replacement);
+        }
+    }
+
     private void fixInsert(Node node) {
         while (node.parent.color == Color.RED) {
             if (node.parent == node.parent.parent.left) {
@@ -155,6 +218,100 @@ public class RedBlackRouterTree {
         }
 
         root.color = Color.BLACK;
+    }
+
+    private void fixDelete(Node node) {
+        while (node != root && node.color == Color.BLACK) {
+            if (node == node.parent.left) {
+                Node sibling = node.parent.right;
+
+                if (sibling == NIL) {
+                    node = node.parent;
+                    continue;
+                }
+
+                if (sibling.color == Color.RED) {
+                    sibling.color = Color.BLACK;
+                    node.parent.color = Color.RED;
+                    rotateLeft(node.parent);
+                    sibling = node.parent.right;
+                }
+
+                if (sibling.left.color == Color.BLACK && sibling.right.color == Color.BLACK) {
+                    sibling.color = Color.RED;
+                    node = node.parent;
+                } else {
+                    if (sibling.right.color == Color.BLACK) {
+                        sibling.left.color = Color.BLACK;
+                        sibling.color = Color.RED;
+                        rotateRight(sibling);
+                        sibling = node.parent.right;
+                    }
+
+                    sibling.color = node.parent.color;
+                    node.parent.color = Color.BLACK;
+                    sibling.right.color = Color.BLACK;
+                    rotateLeft(node.parent);
+                    node = root;
+                }
+            } else {
+                Node sibling = node.parent.left;
+
+                if (sibling == NIL) {
+                    node = node.parent;
+                    continue;
+                }
+
+                if (sibling.color == Color.RED) {
+                    sibling.color = Color.BLACK;
+                    node.parent.color = Color.RED;
+                    rotateRight(node.parent);
+                    sibling = node.parent.left;
+                }
+
+                if (sibling.right.color == Color.BLACK && sibling.left.color == Color.BLACK) {
+                    sibling.color = Color.RED;
+                    node = node.parent;
+                } else {
+                    if (sibling.left.color == Color.BLACK) {
+                        sibling.right.color = Color.BLACK;
+                        sibling.color = Color.RED;
+                        rotateLeft(sibling);
+                        sibling = node.parent.left;
+                    }
+
+                    sibling.color = node.parent.color;
+                    node.parent.color = Color.BLACK;
+                    sibling.left.color = Color.BLACK;
+                    rotateRight(node.parent);
+                    node = root;
+                }
+            }
+        }
+
+        node.color = Color.BLACK;
+    }
+
+    private void transplant(Node oldNode, Node newNode) {
+        if (oldNode.parent == NIL) {
+            root = newNode;
+        } else if (oldNode == oldNode.parent.left) {
+            oldNode.parent.left = newNode;
+        } else {
+            oldNode.parent.right = newNode;
+        }
+
+        newNode.parent = oldNode.parent;
+    }
+
+    private Node findMin(Node node) {
+        Node current = node;
+
+        while (current.left != NIL) {
+            current = current.left;
+        }
+
+        return current;
     }
 
     private int height(Node node) {
