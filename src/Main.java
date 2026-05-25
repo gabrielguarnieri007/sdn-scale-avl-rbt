@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -8,8 +9,11 @@ public class Main {
             100000
     };
 
+    private static final String OUTPUT_FILE = "results/benchmark_results.csv";
+
     public static void main(String[] args) {
         BenchmarkRunner benchmarkRunner = new BenchmarkRunner();
+        List<BenchmarkResult> allResults = new ArrayList<>();
 
         System.out.println("SDN-Scale: AVL vs Red-Black");
         System.out.println("Benchmark de inserção, busca e remoção de 20%");
@@ -20,6 +24,8 @@ public class Main {
             List<PacketRule> rules = RuleGenerator.generateOrderedRules(amount, RuleGenerator.DEFAULT_SEED);
             List<BenchmarkResult> results = benchmarkRunner.runBenchmark(rules);
 
+            allResults.addAll(results);
+
             System.out.println("Volume de dados: " + amount);
 
             for (BenchmarkResult result : results) {
@@ -28,5 +34,9 @@ public class Main {
 
             System.out.println();
         }
+
+        CsvExporter.exportBenchmarkResults(allResults, OUTPUT_FILE);
+
+        System.out.println("Arquivo CSV gerado em: " + OUTPUT_FILE);
     }
 }
