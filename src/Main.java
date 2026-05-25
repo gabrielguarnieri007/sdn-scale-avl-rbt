@@ -12,13 +12,13 @@ public class Main {
         BenchmarkRunner benchmarkRunner = new BenchmarkRunner();
 
         System.out.println("SDN-Scale: AVL vs Red-Black");
-        System.out.println("Benchmark de inserção e busca");
+        System.out.println("Benchmark de inserção, busca e remoção de 20%");
         System.out.println("Seed utilizada: " + RuleGenerator.DEFAULT_SEED);
         System.out.println();
 
         for (int amount : DATASET_SIZES) {
             List<PacketRule> rules = RuleGenerator.generateOrderedRules(amount, RuleGenerator.DEFAULT_SEED);
-            List<BenchmarkResult> results = benchmarkRunner.runInsertionAndSearchBenchmark(rules);
+            List<BenchmarkResult> results = benchmarkRunner.runBenchmark(rules);
 
             System.out.println("Volume de dados: " + amount);
 
