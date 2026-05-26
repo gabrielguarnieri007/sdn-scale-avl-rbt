@@ -1,39 +1,42 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Main {
+    private static final int[] DATASET_SIZES = {
+            1000,
+            10000,
+            50000,
+            100000
+    };
+
+    private static final String OUTPUT_FILE = "results/benchmark_results.csv";
+
     public static void main(String[] args) {
-        AVLRouterTree avlTree = new AVLRouterTree();
-        RedBlackRouterTree redBlackTree = new RedBlackRouterTree();
-
-        PacketRule[] rules = {
-                new PacketRule(30, "192.168.0.30", "10.0.0.30", 100),
-                new PacketRule(20, "192.168.0.20", "10.0.0.20", 90),
-                new PacketRule(10, "192.168.0.10", "10.0.0.10", 80),
-                new PacketRule(40, "192.168.0.40", "10.0.0.40", 70),
-                new PacketRule(50, "192.168.0.50", "10.0.0.50", 60),
-                new PacketRule(25, "192.168.0.25", "10.0.0.25", 85),
-                new PacketRule(35, "192.168.0.35", "10.0.0.35", 75)
-        };
-
-        for (PacketRule rule : rules) {
-            avlTree.insert(rule);
-            redBlackTree.insert(rule);
-        }
-
-        avlTree.delete(20);
-        redBlackTree.delete(20);
+        BenchmarkRunner benchmarkRunner = new BenchmarkRunner();
+        List<BenchmarkResult> allResults = new ArrayList<>();
 
         System.out.println("SDN-Scale: AVL vs Red-Black");
+        System.out.println("Benchmark de inserção, busca e remoção de 20%");
+        System.out.println("Seed utilizada: " + RuleGenerator.DEFAULT_SEED);
+        System.out.println();
 
-        System.out.println("\nAVL");
-        System.out.println("Tamanho: " + avlTree.size());
-        System.out.println("Altura: " + avlTree.height());
-        System.out.println("Rotações: " + avlTree.getRotationCount());
-        System.out.println("Busca pelo ID 20: " + avlTree.search(20));
+        for (int amount : DATASET_SIZES) {
+            List<PacketRule> rules = RuleGenerator.generateOrderedRules(amount, RuleGenerator.DEFAULT_SEED);
+            List<BenchmarkResult> results = benchmarkRunner.runBenchmark(rules);
 
-        System.out.println("\nRed-Black");
-        System.out.println("Tamanho: " + redBlackTree.size());
-        System.out.println("Altura: " + redBlackTree.height());
-        System.out.println("Cor da raiz: " + redBlackTree.getRootColor());
-        System.out.println("Rotações: " + redBlackTree.getRotationCount());
-        System.out.println("Busca pelo ID 20: " + redBlackTree.search(20));
+            allResults.addAll(results);
+
+            System.out.println("Volume de dados: " + amount);
+
+            for (BenchmarkResult result : results) {
+                System.out.println(result);
+            }
+
+            System.out.println();
+        }
+
+        CsvExporter.exportBenchmarkResults(allResults, OUTPUT_FILE);
+
+        System.out.println("Arquivo CSV gerado em: " + OUTPUT_FILE);
     }
 }
