@@ -76,6 +76,19 @@ public class AVLRouterTree {
         return true;
     }
 
+    public boolean validateInvariants() {
+        try {
+            validateNode(root, null, null);
+            return true;
+        } catch (IllegalStateException exception) {
+            return false;
+        }
+    }
+
+    public void assertValidInvariants() {
+        validateNode(root, null, null);
+    }
+
     private Node insert(Node node, PacketRule rule) {
         if (node == null) {
             return new Node(rule);
@@ -127,6 +140,46 @@ public class AVLRouterTree {
         }
 
         return current;
+    }
+
+    private int validateNode(Node node, Integer minId, Integer maxId) {
+        if (node == null) {
+            return 0;
+        }
+
+        int currentId = node.rule.getId();
+
+        if (minId != null && currentId <= minId) {
+            throw new IllegalStateException("Violação da ordem BST na AVL: " + currentId);
+        }
+
+        if (maxId != null && currentId >= maxId) {
+            throw new IllegalStateException("Violação da ordem BST na AVL: " + currentId);
+        }
+
+        int leftHeight = validateNode(node.left, minId, currentId);
+        int rightHeight = validateNode(node.right, currentId, maxId);
+
+        int expectedHeight = 1 + Math.max(leftHeight, rightHeight);
+
+        if (node.height != expectedHeight) {
+            throw new IllegalStateException(
+                    "Altura incorreta na AVL no nó " + currentId +
+                            ". Esperado: " + expectedHeight +
+                            ", atual: " + node.height
+            );
+        }
+
+        int balanceFactor = leftHeight - rightHeight;
+
+        if (Math.abs(balanceFactor) > 1) {
+            throw new IllegalStateException(
+                    "Fator de balanceamento inválido na AVL no nó " + currentId +
+                            ". FB: " + balanceFactor
+            );
+        }
+
+        return expectedHeight;
     }
 
     private int height(Node node) {
