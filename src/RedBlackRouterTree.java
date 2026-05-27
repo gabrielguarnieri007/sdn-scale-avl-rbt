@@ -22,6 +22,16 @@ public class RedBlackRouterTree {
         }
     }
 
+    private static class ValidationResult {
+        private final int nodeCount;
+        private final int blackHeight;
+
+        private ValidationResult(int nodeCount, int blackHeight) {
+            this.nodeCount = nodeCount;
+            this.blackHeight = blackHeight;
+        }
+    }
+
     public RedBlackRouterTree() {
         NIL.left = NIL;
         NIL.right = NIL;
@@ -123,6 +133,46 @@ public class RedBlackRouterTree {
         delete(node);
         size--;
         return true;
+    }
+
+    public boolean validateInvariants() {
+        try {
+            assertValidInvariants();
+            return true;
+        } catch (IllegalStateException exception) {
+            return false;
+        }
+    }
+
+    public void assertValidInvariants() {
+        if (NIL.color != Color.BLACK) {
+            throw new IllegalStateException("O nó sentinela NIL deve ser preto.");
+        }
+
+        if (root == NIL) {
+            if (size != 0) {
+                throw new IllegalStateException("Árvore vazia com tamanho diferente de zero.");
+            }
+
+            return;
+        }
+
+        if (root.color != Color.BLACK) {
+            throw new IllegalStateException("A raiz da Red-Black deve ser preta.");
+        }
+
+        if (root.parent != NIL) {
+            throw new IllegalStateException("A raiz não deve possuir pai real.");
+        }
+
+        ValidationResult result = validateNode(root, null, null);
+
+        if (result.nodeCount != size) {
+            throw new IllegalStateException(
+                    "Quantidade de nós inconsistente na Red-Black. Esperado: " +
+                            size + ", encontrado: " + result.nodeCount
+            );
+        }
     }
 
     private Node findNode(int id) {
@@ -312,6 +362,58 @@ public class RedBlackRouterTree {
         }
 
         return current;
+    }
+
+    private ValidationResult validateNode(Node node, Integer minId, Integer maxId) {
+        if (node == NIL) {
+            return new ValidationResult(0, 1);
+        }
+
+        int currentId = node.rule.getId();
+
+        if (minId != null && currentId <= minId) {
+            throw new IllegalStateException("Violação da ordem BST na Red-Black: " + currentId);
+        }
+
+        if (maxId != null && currentId >= maxId) {
+            throw new IllegalStateException("Violação da ordem BST na Red-Black: " + currentId);
+        }
+
+        if (node.color == Color.RED) {
+            if (node.left.color != Color.BLACK || node.right.color != Color.BLACK) {
+                throw new IllegalStateException("Nó vermelho com filho vermelho na Red-Black: " + currentId);
+            }
+        }
+
+        if (node.left != NIL && node.left.parent != node) {
+            throw new IllegalStateException("Ponteiro de pai incorreto no filho esquerdo de: " + currentId);
+        }
+
+        if (node.right != NIL && node.right.parent != node) {
+            throw new IllegalStateException("Ponteiro de pai incorreto no filho direito de: " + currentId);
+        }
+
+        ValidationResult leftResult = validateNode(node.left, minId, currentId);
+        ValidationResult rightResult = validateNode(node.right, currentId, maxId);
+
+        if (leftResult.blackHeight != rightResult.blackHeight) {
+            throw new IllegalStateException(
+                    "Altura negra diferente na Red-Black no nó " + currentId +
+                            ". Esquerda: " + leftResult.blackHeight +
+                            ", direita: " + rightResult.blackHeight
+            );
+        }
+
+        int blackHeight = leftResult.blackHeight;
+
+        if (node.color == Color.BLACK) {
+            blackHeight++;
+        }
+
+        return new ValidationResult(
+                leftResult.nodeCount + rightResult.nodeCount + 1,
+                blackHeight
+        );
     }
 
     private int height(Node node) {
